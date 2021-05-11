@@ -21,6 +21,8 @@ def main():
         exit(0)
     path = sys.argv[1]
 
+    o3d.visualization.webrtc_server.enable_webrtc()
+
     pts = np.load(path + "/velodyne/000000.npy")
     tcloud = o3d.t.geometry.PointCloud(o3d.core.Device("CPU:0"))
     tcloud.point["points"] = o3d.core.Tensor.from_numpy(pts)
