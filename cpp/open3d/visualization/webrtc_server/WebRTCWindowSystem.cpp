@@ -247,6 +247,22 @@ void WebRTCWindowSystem::StartWebRTCServer() {
                             "customize server address.",
                             impl_->http_address_);
                     HttpServerRequestHandler civet_server(func, options);
+
+                    // start STUN server if needed
+                    std::unique_ptr<cricket::StunServer> stunserver;
+                    std::string localstunurl = "192.168.86.121:3478";
+                    rtc::SocketAddress server_addr;
+                    server_addr.FromString(localstunurl);
+                    rtc::AsyncUDPSocket *server_socket =
+                            rtc::AsyncUDPSocket::Create(thread->socketserver(),
+                                                        server_addr);
+                    if (server_socket) {
+                        stunserver.reset(
+                                new cricket::StunServer(server_socket));
+                        std::cout << "STUN Listening at "
+                                  << server_addr.ToString() << std::endl;
+                    }
+
                     thread->Run();
                 } catch (const CivetException &ex) {
                     utility::LogError("Cannot start Civet server: {}",
