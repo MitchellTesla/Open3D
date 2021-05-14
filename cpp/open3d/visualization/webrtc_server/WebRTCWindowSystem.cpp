@@ -51,6 +51,13 @@ namespace open3d {
 namespace visualization {
 namespace webrtc_server {
 
+// List of ICE servers. We only use publicly available STUN servers, which works
+// for most users. In certain network configurations (e.g. if the peers are
+// behind certain type of firewalls), STUN server may fail to resolve and in
+// this case, we'll need to implement and host a separate TURN server. If our
+// default list fails to connect, you may replace this with other STUN servers.
+static const std::list<std::string> ice_servers{"stun:73.70.46.61:3478"};
+
 static std::string GetEnvWebRTCIP() {
     if (const char *env_p = std::getenv("WEBRTC_IP")) {
         return std::string(env_p);
@@ -190,19 +197,6 @@ void WebRTCWindowSystem::StartWebRTCServer() {
             rtc::LogMessage::LogTimestamps();
             rtc::LogMessage::LogThreads();
 
-            // List of ICE servers. We only use publicly available STUN servers,
-            // which works
-            // for most users. In certain network configurations (e.g. if the
-            // peers are behind certain type of firewalls), STUN server may fail
-            // to resolve and in this case, we'll need to implement and host a
-            // separate TURN server. If our default list fails to connect, you
-            // may replace this with other STUN servers.
-
-            // std::list<std::string>
-            // ice_servers{"stun:stun.l.google.com:19302"};
-            std::list<std::string> ice_servers{"stun:" + GetEnvWebRTCIP() +
-                                               ":3478"};
-
             // PeerConnectionManager manages all WebRTC connections.
             rtc::Thread *thread = rtc::Thread::Current();
             rtc::InitializeSSL();
@@ -243,6 +237,23 @@ void WebRTCWindowSystem::StartWebRTCServer() {
                             func = impl_->peer_connection_manager_
                                            ->GetHttpApi();
 
+                    // Start STUN server if needed
+                    std::unique_ptr<cricket::StunServer> stunserver;
+                    std::string localstunurl = "192.168.86.121:3478";
+                    if (!localstunurl.empty()) {
+                        rtc::SocketAddress server_addr;
+                        server_addr.FromString(localstunurl);
+                        rtc::AsyncUDPSocket *server_socket =
+                                rtc::AsyncUDPSocket::Create(
+                                        thread->socketserver(), server_addr);
+                        if (server_socket) {
+                            stunserver.reset(
+                                    new cricket::StunServer(server_socket));
+                            std::cout << "STUN Listening at "
+                                      << server_addr.ToString() << std::endl;
+                        }
+                    }
+
                     // Main loop for Civet server.
                     utility::LogInfo("Open3D WebVisualizer is serving at {}.",
                                      impl_->http_address_);
@@ -252,22 +263,6 @@ void WebRTCWindowSystem::StartWebRTCServer() {
                             "customize server address.",
                             impl_->http_address_);
                     HttpServerRequestHandler civet_server(func, options);
-
-                    // start STUN server if needed
-                    std::unique_ptr<cricket::StunServer> stunserver;
-                    std::string localstunurl = "192.168.86.121:3478";
-                    rtc::SocketAddress server_addr;
-                    server_addr.FromString(localstunurl);
-                    rtc::AsyncUDPSocket *server_socket =
-                            rtc::AsyncUDPSocket::Create(thread->socketserver(),
-                                                        server_addr);
-                    if (server_socket) {
-                        stunserver.reset(
-                                new cricket::StunServer(server_socket));
-                        std::cout << "STUN Listening at "
-                                  << server_addr.ToString() << std::endl;
-                    }
-
                     thread->Run();
                 } catch (const CivetException &ex) {
                     utility::LogError("Cannot start Civet server: {}",
