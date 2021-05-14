@@ -182,6 +182,7 @@ WebRTCWindowSystem::OSWindow WebRTCWindowSystem::GetOSWindowByUID(
 }
 
 void WebRTCWindowSystem::StartWebRTCServer() {
+    utility::SetVerbosityLevel(utility::VerbosityLevel::Debug);
     if (!impl_->sever_started_) {
         auto start_webrtc_thread = [this]() {
             // Ensure Application::Initialize() is called before this.
@@ -191,7 +192,7 @@ void WebRTCWindowSystem::StartWebRTCServer() {
 
             // Logging settings.
             // src/rtc_base/logging.h: LS_VERBOSE, LS_ERROR
-            rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)rtc::LS_ERROR);
+            rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)rtc::LS_VERBOSE);
 
             rtc::LogMessage::LogTimestamps();
             rtc::LogMessage::LogThreads();
