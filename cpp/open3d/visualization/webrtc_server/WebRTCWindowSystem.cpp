@@ -59,6 +59,14 @@ static std::string GetEnvWebRTCIP() {
     }
 }
 
+static std::string GetEnvWebRTCPublicIP() {
+    if (const char *env_p = std::getenv("WEBRTC_PUBLIC_IP")) {
+        return std::string(env_p);
+    } else {
+        return "localhost";
+    }
+}
+
 static std::string GetEnvWebRTCPort() {
     if (const char *env_p = std::getenv("WEBRTC_PORT")) {
         return std::string(env_p);
@@ -200,7 +208,8 @@ void WebRTCWindowSystem::StartWebRTCServer() {
             //
             // std::list<std::string>
             // ice_servers{"stun:stun.l.google.com:19302"};
-            std::list<std::string> ice_servers{"stun:73.70.46.61:3478"};
+            std::list<std::string> ice_servers{
+                    "stun:" + GetEnvWebRTCPublicIP() + ":3478"};
 
             // PeerConnectionManager manages all WebRTC connections.
             rtc::Thread *thread = rtc::Thread::Current();
