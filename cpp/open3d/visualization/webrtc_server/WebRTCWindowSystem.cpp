@@ -196,7 +196,11 @@ void WebRTCWindowSystem::StartWebRTCServer() {
             // to resolve and in this case, we'll need to implement and host a
             // separate TURN server. If our default list fails to connect, you
             // may replace this with other STUN servers.
-            std::list<std::string> ice_servers{"stun:stun.l.google.com:19302"};
+
+            // std::list<std::string>
+            // ice_servers{"stun:stun.l.google.com:19302"};
+            std::list<std::string> ice_servers{"stun:" + GetEnvWebRTCIP() +
+                                               ":3478"};
 
             // PeerConnectionManager manages all WebRTC connections.
             rtc::Thread *thread = rtc::Thread::Current();
