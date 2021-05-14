@@ -192,7 +192,7 @@ void WebRTCWindowSystem::StartWebRTCServer() {
 
             // Logging settings.
             // src/rtc_base/logging.h: LS_VERBOSE, LS_ERROR
-            rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)rtc::LS_VERBOSE);
+            rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)rtc::LS_ERROR);
 
             rtc::LogMessage::LogTimestamps();
             rtc::LogMessage::LogThreads();

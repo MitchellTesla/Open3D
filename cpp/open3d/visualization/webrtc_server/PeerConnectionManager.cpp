@@ -419,7 +419,7 @@ const Json::Value PeerConnectionManager::Call(const std::string &peerid,
 
             // TODO (Yixing): this is not the place to send SendInitFrames. Call
             // SendInitFrames after the video stream is fully established.
-            WebRTCWindowSystem::GetInstance()->SendInitFrames(window_uid);
+            // WebRTCWindowSystem::GetInstance()->SendInitFrames(window_uid);
         }
     }
     return answer;
